@@ -89,6 +89,50 @@ const BIOMAS = [
         moviles: [],
         zonasLentas: [[520, 520, 150, 48], [1180, 520, 160, 48], [1880, 520, 150, 48]],
         ladrillos: [960, 2300]
+    },
+    {
+        nombre: 'Río de Janeiro (Brasil)',
+        descripcion: 'Escalones hacia el Corcovado, con el Cristo Redentor vigilando la ciudad desde lo alto.',
+        tex: 'brasil', cielo: [0x4fc3f7, 0xc8f0ff], viento: 0, resbaladizo: false,
+        paleta: { plat: [0x7a6a58, 0x3f8f3f, 0x4e4236], suelo: [0x5d4e3f, 0x4caf50, 0x3e3328] },
+        plataformas: [
+            [380, 500, 3], [560, 440, 3], [740, 380, 3], [920, 320, 3], [1100, 380, 3], [1280, 440, 3],
+            [1480, 380, 3], [1660, 320, 3], [1840, 260, 3], [2020, 340, 3], [2220, 420, 3]
+        ],
+        moviles: [], zonasLentas: [], ladrillos: [1200, 1900]
+    },
+    {
+        nombre: 'Guatapé (Colombia)',
+        descripcion: 'Escalones del Peñol y el embalse de aguas azules. El agua frena a la pelota.',
+        tex: 'colombia', cielo: [0x81d4fa, 0xe1f5fe], viento: 0, resbaladizo: false,
+        paleta: { plat: [0xe8e0d5, 0xe53935, 0x8d8577], suelo: [0xc8b89a, 0x7cb342, 0x6d6253] },
+        plataformas: [
+            [380, 480, 3], [560, 420, 3], [740, 360, 3], [920, 300, 3], [1100, 360, 3], [1280, 420, 3],
+            [1460, 360, 3], [1640, 300, 3], [1820, 380, 3], [2000, 440, 3], [2200, 380, 3]
+        ],
+        moviles: [], zonasLentas: [[600, 520, 200, 48], [1500, 520, 220, 48]], ladrillos: [1000, 2300]
+    },
+    {
+        nombre: 'Nueva York (Estados Unidos)',
+        descripcion: 'Muelles y ferris del puerto, con la Estatua de la Libertad iluminando el camino.',
+        tex: 'nueva', cielo: [0x7ec8e3, 0xd7f0ff], viento: 0, resbaladizo: false,
+        paleta: { plat: [0x5f8f7a, 0x9fd3b8, 0x3e6457], suelo: [0x4a6b5c, 0x7fb8a4, 0x33493f] },
+        plataformas: [
+            [360, 480, 4], [600, 420, 3], [800, 460, 3], [1000, 400, 3], [1220, 340, 3], [1420, 400, 3],
+            [1640, 460, 3], [1860, 400, 3], [2060, 340, 4], [2260, 400, 3]
+        ],
+        moviles: [], zonasLentas: [[700, 520, 140, 48], [1500, 520, 140, 48]], ladrillos: [1120, 2150]
+    },
+    {
+        nombre: 'Navidad Nevada',
+        descripcion: 'Pinos cubiertos de nieve y suelo de hielo que resbala. Al final, la Casa del Reencuentro espera a los amigos.',
+        tex: 'navidad', cielo: [0x1a237e, 0x5c6bc0], viento: 0, resbaladizo: true,
+        paleta: { plat: [0x8d6e63, 0xffffff, 0x6d4c41], suelo: [0x6d4c41, 0xf5f9ff, 0x4e342e] },
+        plataformas: [
+            [400, 480, 3], [580, 420, 3], [760, 360, 3], [940, 420, 3], [1120, 470, 3], [1320, 400, 3],
+            [1520, 330, 3], [1720, 400, 4], [1930, 460, 3], [2130, 380, 3], [2330, 440, 3]
+        ],
+        moviles: [], zonasLentas: [], ladrillos: [1010, 1700]
     }
 ];
 
@@ -349,11 +393,186 @@ function fondoManglar(escena, ancho) {
     });
 }
 
+// Cristo Redentor dibujado en el origen (base del pedestal en baseY)
+function drawCristo(g, x, baseY) {
+    g.fillStyle(0x9e9e9e, 1);
+    g.fillRect(x - 14, baseY - 26, 28, 26);      // pedestal
+    g.fillStyle(0xf1efe7, 1);
+    g.fillRect(x - 6, baseY - 100, 12, 76);      // túnica
+    g.fillRect(x - 40, baseY - 92, 80, 8);       // brazos extendidos
+    g.fillCircle(x, baseY - 108, 7);             // cabeza
+}
+
+// Estatua de la Libertad (base del pedestal en baseY)
+function drawEstatua(g, x, baseY) {
+    g.fillStyle(0xa8a29a, 1);
+    g.fillRect(x - 30, baseY - 40, 60, 40);      // pedestal
+    g.fillStyle(0x7fbfa0, 1);
+    g.fillPoints([{ x: x - 18, y: baseY - 40 }, { x: x + 18, y: baseY - 40 },
+                  { x: x + 11, y: baseY - 170 }, { x: x - 11, y: baseY - 170 }], true);
+    g.fillCircle(x, baseY - 182, 11);            // cabeza
+    g.fillTriangle(x - 9, baseY - 190, x - 6, baseY - 204, x - 3, baseY - 190);   // corona
+    g.fillTriangle(x - 2, baseY - 190, x + 1, baseY - 206, x + 4, baseY - 190);
+    g.fillTriangle(x + 5, baseY - 190, x + 8, baseY - 204, x + 11, baseY - 190);
+    g.fillRect(x + 6, baseY - 240, 9, 80);       // brazo
+    g.fillStyle(0xffd54f, 1);
+    g.fillRect(x + 4, baseY - 258, 13, 20);      // antorcha
+    g.fillStyle(0xff9800, 1);
+    g.fillTriangle(x + 4, baseY - 258, x + 17, baseY - 258, x + 10, baseY - 280);  // llama
+}
+
+function fondoBrasil(escena, ancho) {
+    dibujarCielo(escena, 0x4fc3f7, 0xc8f0ff);
+    escena.add.circle(700, 90, 36, 0xfff176).setScrollFactor(0).setDepth(-9);
+
+    // Montañas tipo Pão de Açúcar
+    const montes = escena.add.graphics().setScrollFactor(0.3).setDepth(-8);
+    montes.fillStyle(0x2e7d4f, 1);
+    const picos = [{ x: -200, y: WORLD_H }];
+    for (let x = -200; x <= ancho + 200; x += 170) picos.push({ x, y: Phaser.Math.Between(260, 380) });
+    picos.push({ x: ancho + 200, y: WORLD_H });
+    montes.fillPoints(picos, true);
+
+    // Corcovado con el Cristo Redentor en la cima
+    const cor = escena.add.graphics().setScrollFactor(0.5).setDepth(-7);
+    cor.fillStyle(0x3f8f3f, 1);
+    cor.fillEllipse(1400, 520, 300, 600);
+    drawCristo(cor, 1400, 225);
+
+    nubes(escena, ancho, 5, 0xffffff);
+}
+
+function fondoColombia(escena, ancho) {
+    dibujarCielo(escena, 0x81d4fa, 0xe1f5fe);
+
+    // Colinas verdes
+    const colinas = escena.add.graphics().setScrollFactor(0.4).setDepth(-8);
+    colinas.fillStyle(0x558b2f, 1);
+    for (let x = 0; x < ancho + 200; x += 320) colinas.fillEllipse(x, SUELO_TOP, 420, 220);
+
+    // El Peñol: roca con escalera en zigzag y zócalos de colores
+    const roca = escena.add.graphics().setScrollFactor(0.6).setDepth(-6);
+    roca.fillStyle(0x8d8577, 1);
+    roca.fillPoints([
+        { x: 1300, y: SUELO_TOP }, { x: 1330, y: 320 }, { x: 1380, y: 200 }, { x: 1440, y: 120 },
+        { x: 1500, y: 80 }, { x: 1560, y: 110 }, { x: 1620, y: 190 }, { x: 1680, y: 300 }, { x: 1700, y: SUELO_TOP }
+    ], true);
+    roca.lineStyle(3, 0xf5f5f5, 0.9);
+    const escalera = [[1460, 520], [1540, 470], [1466, 420], [1540, 370], [1470, 320], [1530, 270], [1488, 220]];
+    for (let i = 0; i < escalera.length - 1; i++) {
+        roca.lineBetween(escalera[i][0], escalera[i][1], escalera[i + 1][0], escalera[i + 1][1]);
+    }
+    [0xe53935, 0xffca28, 0x1e88e5, 0x43a047, 0xff7043].forEach((c, i) => {
+        roca.fillStyle(c, 1);
+        roca.fillRect(1455, 430 + i * 16, 90, 12);
+    });
+
+    // Embalse de aguas azules
+    const lago = escena.add.graphics().setScrollFactor(0.8).setDepth(-4);
+    lago.fillStyle(0x1e88e5, 1);
+    lago.fillRect(-200, 480, ancho + 400, 88);
+    lago.lineStyle(2, 0xbbdefb, 0.7);
+    for (let x = -200; x < ancho + 200; x += 70) {
+        const y = Phaser.Math.Between(490, 555);
+        lago.lineBetween(x, y, x + 30, y);
+    }
+
+    nubes(escena, ancho, 4, 0xffffff);
+}
+
+function fondoNueva(escena, ancho) {
+    dibujarCielo(escena, 0x7ec8e3, 0xd7f0ff);
+    escena.add.circle(180, 100, 30, 0xfff59d).setScrollFactor(0).setDepth(-9);
+
+    // Skyline de Manhattan
+    const ciudad = escena.add.graphics().setScrollFactor(0.5).setDepth(-6);
+    const tonos = [0xb0bec5, 0x90a4ae, 0xcfd8dc, 0x78909c];
+    for (let x = -50; x < ancho + 50;) {
+        const w = Phaser.Math.Between(50, 90), h = Phaser.Math.Between(150, 330);
+        ciudad.fillStyle(tonos[Phaser.Math.Between(0, tonos.length - 1)], 1);
+        ciudad.fillRect(x, SUELO_TOP - h, w, h);
+        ciudad.fillStyle(0xe3f2fd, 0.5);
+        for (let wy = SUELO_TOP - h + 12; wy < SUELO_TOP - 30; wy += 16) {
+            for (let wx = x + 6; wx < x + w - 8; wx += 12) ciudad.fillRect(wx, wy, 6, 8);
+        }
+        x += w + Phaser.Math.Between(0, 8);
+    }
+
+    // Estatua de la Libertad en su isla
+    const estatua = escena.add.graphics().setScrollFactor(0.6).setDepth(-5);
+    drawEstatua(estatua, 1900, 500);
+
+    // Bahía del puerto
+    const bahia = escena.add.graphics().setScrollFactor(0.8).setDepth(-4);
+    bahia.fillStyle(0x2a7fa8, 1);
+    bahia.fillRect(-200, 510, ancho + 400, 58);
+    bahia.lineStyle(2, 0xb3e5fc, 0.6);
+    for (let x = -200; x < ancho + 200; x += 60) {
+        const y = Phaser.Math.Between(520, 560);
+        bahia.lineBetween(x, y, x + 26, y);
+    }
+
+    nubes(escena, ancho, 4, 0xffffff);
+}
+
+function fondoNavidad(escena, ancho) {
+    dibujarCielo(escena, 0x1a237e, 0x5c6bc0);
+
+    // Estrellas y luna
+    for (let i = 0; i < 60; i++) {
+        escena.add.circle(Phaser.Math.Between(0, 800), Phaser.Math.Between(0, 330),
+            Phaser.Math.FloatBetween(0.6, 1.8), 0xffffff, Phaser.Math.FloatBetween(0.4, 1))
+            .setScrollFactor(0).setDepth(-9);
+    }
+    escena.add.circle(640, 90, 34, 0xfff8e1).setScrollFactor(0).setDepth(-9);
+
+    // Colinas nevadas
+    const nieve = escena.add.graphics().setScrollFactor(0.5).setDepth(-7);
+    nieve.fillStyle(0xe8eef7, 1);
+    for (let x = 0; x < ancho + 300; x += 260) nieve.fillEllipse(x, SUELO_TOP, 420, 200);
+
+    // Pinos con adornos
+    const pinos = escena.add.graphics().setScrollFactor(0.9).setDepth(-2);
+    for (let x = 40; x < ancho; x += Phaser.Math.Between(130, 190)) {
+        const alto = Phaser.Math.Between(90, 150);
+        pinos.fillStyle(0x1b5e20, 1);
+        for (let t = 0; t < 3; t++) {
+            const apice = SUELO_TOP - alto + t * alto * 0.3;
+            const base = apice + alto * 0.5;
+            const mitad = 14 + t * 10;
+            pinos.fillTriangle(x, apice, x - mitad, base, x + mitad, base);
+        }
+        pinos.fillStyle(0xffd54f, 1);
+        pinos.fillCircle(x, SUELO_TOP - alto - 4, 4);            // estrella
+        pinos.fillStyle(0xe53935, 1);
+        pinos.fillCircle(x - 8, SUELO_TOP - alto * 0.6, 3);
+        pinos.fillStyle(0x42a5f5, 1);
+        pinos.fillCircle(x + 9, SUELO_TOP - alto * 0.45, 3);
+    }
+
+    // Nieve cayendo
+    escena.time.addEvent({
+        delay: 120, loop: true,
+        callback: () => {
+            const copo = escena.add.circle(Phaser.Math.Between(0, 800), -8, Phaser.Math.FloatBetween(1, 3), 0xffffff, 0.9)
+                .setScrollFactor(0).setDepth(9);
+            escena.tweens.add({
+                targets: copo, y: 620, x: copo.x + Phaser.Math.Between(-40, 40),
+                duration: Phaser.Math.Between(3000, 5000), onComplete: () => copo.destroy()
+            });
+        }
+    });
+}
+
 const FONDOS = {
     quito: fondoQuito,
     andes: fondoAndes,
     guayaquil: fondoGuayaquil,
-    manglar: fondoManglar
+    manglar: fondoManglar,
+    brasil: fondoBrasil,
+    colombia: fondoColombia,
+    nueva: fondoNueva,
+    navidad: fondoNavidad
 };
 
 // ============================================================
