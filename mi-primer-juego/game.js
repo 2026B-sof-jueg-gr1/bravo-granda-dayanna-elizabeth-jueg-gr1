@@ -356,9 +356,11 @@ function fondoAndes(escena, ancho) {
         fr.fillEllipse(x, SUELO_TOP - alto - 4, 22, 10);
     }
 
-    // Niebla que se desplaza lentamente
-    for (let i = 0; i < 4; i++) {
-        const niebla = escena.add.rectangle(Phaser.Math.Between(0, ancho), Phaser.Math.Between(200, 480), 600, 120, 0xffffff, 0.22)
+    // Niebla suave: bruma que se desplaza lentamente
+    for (let i = 0; i < 7; i++) {
+        const niebla = escena.add.image(Phaser.Math.Between(0, ancho), Phaser.Math.Between(180, 480), 'niebla')
+            .setScale(Phaser.Math.FloatBetween(1.6, 2.6))
+            .setAlpha(0.7)
             .setScrollFactor(0.5).setDepth(-3);
         escena.tweens.add({ targets: niebla, x: niebla.x + 160, duration: 8000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     }
@@ -703,6 +705,9 @@ class Menu extends Phaser.Scene {
         this.add.text(400, 85, 'Misión 1: El Alma del Juego', {
             fontFamily: 'Arial', fontSize: '18px', color: '#1b3a4b'
         }).setOrigin(0.5);
+        this.add.text(400, 112, `Puntuación total: ${this.registry.get('puntuacion') ?? 0}`, {
+            fontFamily: 'Arial', fontSize: '16px', fontStyle: 'bold', color: '#1b3a4b'
+        }).setOrigin(0.5);
 
         filasY.forEach((y, r) => {
             this.marcos[r] = this.add.rectangle(300, y, 440, 56, 0xffffff, 0.35).setVisible(false);
@@ -896,8 +901,9 @@ class Juego extends Phaser.Scene {
         });
         for (let x = 300; x < this.ancho - 300; x += 400) this.monedas.create(x, 530, 'moneda');
         this.totalMonedas = this.monedas.getLength();
-        // Mínimo para pasar: sube con cada paisaje (de 30% a 60% de las monedas)
-        this.monedasRequeridas = Math.ceil(this.totalMonedas * Math.min(0.6, 0.3 + 0.05 * this.idx));
+        // Objetivo: 35 monedas (o todas, si el paisaje tiene menos); para pasar basta la mitad
+        this.objetivoMonedas = Math.min(35, this.totalMonedas);
+        this.monedasRequeridas = Math.ceil(this.objetivoMonedas / 2);
 
         // Pelota del avatar elegido
         this.player = this.physics.add.sprite(100, 300, this.av.textura);
@@ -1117,11 +1123,20 @@ class Juego extends Phaser.Scene {
     recogerMoneda(moneda) {
         moneda.disableBody(true, true);
         this.puntos++;
+        this.sumarPuntos(100);
         this.actualizarMarcador();
     }
 
+    puntuacion() {
+        return this.registry.get('puntuacion') ?? 0;
+    }
+
+    sumarPuntos(n) {
+        this.registry.set('puntuacion', this.puntuacion() + n);
+    }
+
     actualizarMarcador() {
-        this.textoMonedas.setText(`Monedas: ${this.puntos} / ${this.monedasRequeridas} para pasar`);
+        this.textoMonedas.setText(`Monedas: ${this.puntos} / ${this.objetivoMonedas}  (mínimo ${this.monedasRequeridas})\nPuntos: ${this.puntuacion()}`);
         this.textoAvatar.setText(`${this.av.nombre} · ${this.bio.nombre}`);
     }
 
@@ -1164,12 +1179,13 @@ class Juego extends Phaser.Scene {
         }
 
         this.ganado = true;
+        this.sumarPuntos(500);   // bonificación por completar el paisaje
         // Desbloquea el siguiente paisaje
         const actual = this.registry.get('progreso') ?? 1;
         this.registry.set('progreso', Math.min(BIOMAS.length, Math.max(actual, this.idx + 2)));
 
         if (this.esFinal) {
-            this.mostrarTexto('¡Llegaste a la Casa del Reencuentro!', 'Tus amigos te estaban esperando.  ·  Enter: volver al menú');
+            this.mostrarTexto('¡Llegaste a la Casa del Reencuentro!', `Tus amigos te estaban esperando · Puntuación: ${this.puntuacion()} · Enter: menú`);
             this.amigos.forEach((a, i) => this.tweens.add({
                 targets: a, y: a.y - 30, yoyo: true, repeat: -1, delay: i * 150, duration: 300, ease: 'Sine.easeOut'
             }));
@@ -1249,6 +1265,14 @@ function crearTexturas(escena) {
     g.fillStyle(0xffd700, 1); g.fillCircle(10, 10, 10);
     g.fillStyle(0xfff4a3, 1); g.fillCircle(7, 7, 3);
     g.generateTexture('moneda', 20, 20);
+    g.clear();
+
+    // Niebla: capas de elipses muy translúcidas que se funden sin bordes duros
+    for (let i = 0; i < 10; i++) {
+        g.fillStyle(0xffffff, 0.05);
+        g.fillEllipse(128, 64, 240 - i * 22, 110 - i * 9);
+    }
+    g.generateTexture('niebla', 256, 128);
     g.clear();
 
     // Amigos de la Casa del Reencuentro
