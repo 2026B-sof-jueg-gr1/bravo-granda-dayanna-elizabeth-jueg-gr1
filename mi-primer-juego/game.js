@@ -16,13 +16,13 @@ const AVATARES = {
         nombre: 'Pelota Clásica',
         descripcion: 'Ligera y ágil: rebota alto y responde al instante. Se desvía en las cuestas.',
         textura: 'ball', radio: 16, rebote: 0.7, salto: -420,
-        pesoExtra: 0, aceleracion: [600, 900], velMax: [240, 420], friccion: 900, rompe: false
+        pesoExtra: 0, aceleracion: [600, 900], velMax: [240, 420], friccion: 900
     },
     roca: {
         nombre: 'Esfera de Roca',
-        descripcion: 'Pesada y lenta, con mucha inercia. Sube cuestas y rompe bloques frágiles al correr.',
+        descripcion: 'Pesada y lenta, con mucha inercia. Se mece al moverse y rompe bloques frágiles al correr.',
         textura: 'roca', radio: 18, rebote: 0.1, salto: -380,
-        pesoExtra: 150, aceleracion: [330, 480], velMax: [170, 260], friccion: 350, rompe: true
+        pesoExtra: 150, aceleracion: [330, 480], velMax: [170, 260], friccion: 250
     }
 };
 
@@ -36,20 +36,26 @@ const ATUENDOS = {
     impermeable: { nombre: 'Impermeable', descripcion: 'Capa amarilla para los esteros y la lluvia del manglar.' }
 };
 
-// ---------- Biomas ----------
-// plataformas: [x, y, bloques de ancho]  ·  moviles: plataformas que van de min a max
-// ladrillos: x de bloques frágiles sobre el suelo  ·  zonasLentas: [x, y, ancho, alto] (agua)
+// ---------- Biomas (en orden de dificultad) ----------
+// plataformas: [x, y, bloques de ancho]
+// moviles: plataformas que van de min a max (horizontal)
+// redondeles: plataformas que giran en círculo alrededor de (cx, cy)
+// calles: autos que cruzan la calle entre x1 y x2 (empujan si chocan de lado)
+// ladrillos: x de bloques frágiles sobre el suelo
+// zonasLentas: [x, y, ancho, alto] (agua que frena)
 const BIOMAS = [
     {
         nombre: 'Quito Colonial',
-        descripcion: 'Cuestas empinadas y adoquines bajo un atardecer cálido. Sube las escalinatas con cuidado.',
+        descripcion: 'Cuestas empinadas y adoquines bajo un atardecer cálido. Cruza la calle con cuidado.',
         tex: 'quito', cielo: [0xff9e5e, 0xffe3b8], viento: 0, resbaladizo: false,
         paleta: { plat: [0xb59f88, 0xd7c7b1, 0x7d6b5a], suelo: [0x9e8b74, 0xc9b79f, 0x6b5b4a] },
         plataformas: [
             [420, 500, 4], [600, 440, 4], [780, 380, 4], [960, 320, 4], [1140, 380, 4], [1320, 440, 4],
             [1520, 400, 4], [1720, 340, 4], [1920, 280, 4], [2120, 360, 5], [2320, 430, 3]
         ],
-        moviles: [], zonasLentas: [], ladrillos: [1250, 1980]
+        moviles: [], redondeles: [{ cx: 1800, cy: 330, r: 70, tiles: 3, w: 0.9 }],
+        calles: [{ x1: 650, x2: 1050, vel: 90, color: 0xe53935 }],
+        zonasLentas: [], ladrillos: [1250, 1980]
     },
     {
         nombre: 'Andes Verdes',
@@ -60,11 +66,13 @@ const BIOMAS = [
             [400, 470, 3], [600, 400, 3], [800, 330, 3], [1000, 400, 3], [1200, 470, 3],
             [1400, 380, 3], [1600, 310, 3], [1800, 380, 3], [2000, 460, 4], [2220, 380, 3]
         ],
-        moviles: [], zonasLentas: [], ladrillos: [880, 1520, 2180]
+        moviles: [], redondeles: [{ cx: 1650, cy: 300, r: 60, tiles: 3, w: 1.1 }],
+        calles: [{ x1: 900, x2: 1300, vel: 100, color: 0xffca28 }],
+        zonasLentas: [], ladrillos: [880, 1520, 2180]
     },
     {
         nombre: 'Guayaquil Tropical',
-        descripcion: 'Sol y calor junto al río. Las plataformas doradas del malecón se mueven: sube a bordo.',
+        descripcion: 'Sol y calor junto al río. Plataformas doradas que se mueven y avenidas con tráfico.',
         tex: 'guayaquil', cielo: [0x3fb6f0, 0xbfe9ff], viento: 0, resbaladizo: false,
         paleta: { plat: [0xc98d3c, 0xf2c46d, 0x8a5a14], suelo: [0xd9a35a, 0xf0c27b, 0x8a5a14] },
         plataformas: [
@@ -74,6 +82,11 @@ const BIOMAS = [
             { x: 560, y: 330, tiles: 3, min: 500, max: 700, vel: 60 },
             { x: 1280, y: 300, tiles: 3, min: 1180, max: 1400, vel: 70 },
             { x: 1800, y: 260, tiles: 3, min: 1700, max: 1900, vel: 60 }
+        ],
+        redondeles: [{ cx: 2100, cy: 300, r: 50, tiles: 3, w: 1.0 }],
+        calles: [
+            { x1: 500, x2: 900, vel: 110, color: 0xe53935 },
+            { x1: 1250, x2: 1700, vel: 130, color: 0x1e88e5 }
         ],
         zonasLentas: [], ladrillos: [820, 1620]
     },
@@ -86,7 +99,8 @@ const BIOMAS = [
             [380, 490, 3], [600, 430, 3], [820, 490, 3], [1040, 420, 3], [1260, 350, 3],
             [1480, 430, 3], [1700, 490, 3], [1920, 410, 3], [2140, 350, 3]
         ],
-        moviles: [],
+        moviles: [], redondeles: [{ cx: 1500, cy: 200, r: 60, tiles: 3, w: 1.0 }],
+        calles: [],
         zonasLentas: [[520, 520, 150, 48], [1180, 520, 160, 48], [1880, 520, 150, 48]],
         ladrillos: [960, 2300]
     },
@@ -99,7 +113,9 @@ const BIOMAS = [
             [380, 500, 3], [560, 440, 3], [740, 380, 3], [920, 320, 3], [1100, 380, 3], [1280, 440, 3],
             [1480, 380, 3], [1660, 320, 3], [1840, 260, 3], [2020, 340, 3], [2220, 420, 3]
         ],
-        moviles: [], zonasLentas: [], ladrillos: [1200, 1900]
+        moviles: [], redondeles: [{ cx: 2150, cy: 180, r: 50, tiles: 3, w: 1.2 }],
+        calles: [{ x1: 1000, x2: 1400, vel: 110, color: 0xffca28 }],
+        zonasLentas: [], ladrillos: [1200, 1900]
     },
     {
         nombre: 'Guatapé (Colombia)',
@@ -110,7 +126,9 @@ const BIOMAS = [
             [380, 480, 3], [560, 420, 3], [740, 360, 3], [920, 300, 3], [1100, 360, 3], [1280, 420, 3],
             [1460, 360, 3], [1640, 300, 3], [1820, 380, 3], [2000, 440, 3], [2200, 380, 3]
         ],
-        moviles: [], zonasLentas: [[600, 520, 200, 48], [1500, 520, 220, 48]], ladrillos: [1000, 2300]
+        moviles: [], redondeles: [{ cx: 800, cy: 200, r: 60, tiles: 3, w: 0.8 }],
+        calles: [{ x1: 1700, x2: 2100, vel: 100, color: 0x8e24aa }],
+        zonasLentas: [[600, 520, 200, 48], [1500, 520, 220, 48]], ladrillos: [1000, 2300]
     },
     {
         nombre: 'Nueva York (Estados Unidos)',
@@ -121,18 +139,25 @@ const BIOMAS = [
             [360, 480, 4], [600, 420, 3], [800, 460, 3], [1000, 400, 3], [1220, 340, 3], [1420, 400, 3],
             [1640, 460, 3], [1860, 400, 3], [2060, 340, 4], [2260, 400, 3]
         ],
-        moviles: [], zonasLentas: [[700, 520, 140, 48], [1500, 520, 140, 48]], ladrillos: [1120, 2150]
+        moviles: [], redondeles: [{ cx: 1100, cy: 180, r: 60, tiles: 3, w: 1.3 }],
+        calles: [{ x1: 1850, x2: 2250, vel: 130, color: 0xffca28 }],
+        zonasLentas: [[700, 520, 140, 48], [1500, 520, 140, 48]], ladrillos: [1120, 2150]
     },
     {
         nombre: 'Navidad Nevada',
-        descripcion: 'Pinos cubiertos de nieve y suelo de hielo que resbala. Al final, la Casa del Reencuentro espera a los amigos.',
+        descripcion: 'Pinos nevados y suelo de hielo que resbala. Al final, la Casa del Reencuentro espera a los amigos.',
         tex: 'navidad', cielo: [0x1a237e, 0x5c6bc0], viento: 0, resbaladizo: true,
         paleta: { plat: [0x8d6e63, 0xffffff, 0x6d4c41], suelo: [0x6d4c41, 0xf5f9ff, 0x4e342e] },
         plataformas: [
             [400, 480, 3], [580, 420, 3], [760, 360, 3], [940, 420, 3], [1120, 470, 3], [1320, 400, 3],
             [1520, 330, 3], [1720, 400, 4], [1930, 460, 3], [2130, 380, 3], [2330, 440, 3]
         ],
-        moviles: [], zonasLentas: [], ladrillos: [1010, 1700]
+        moviles: [], redondeles: [{ cx: 1300, cy: 220, r: 55, tiles: 3, w: 1.0 }],
+        calles: [
+            { x1: 600, x2: 1000, vel: 120, color: 0xe53935 },
+            { x1: 1400, x2: 1800, vel: 140, color: 0x1e88e5 }
+        ],
+        zonasLentas: [], ladrillos: [1010, 1700]
     }
 ];
 
@@ -140,7 +165,7 @@ const BIOMAS = [
 // Utilidades de dibujo (procedural)
 // ============================================================
 
-// Bloque con juntas: plataformas, suelo y atajos
+// Bloque con juntas: plataformas, suelo, redondeles
 function crearTexturaBloque(escena, key, w, h, [base, tope, linea]) {
     if (escena.textures.exists(key)) return key;
     const g = escena.make.graphics({ x: 0, y: 0, add: false });
@@ -152,6 +177,24 @@ function crearTexturaBloque(escena, key, w, h, [base, tope, linea]) {
     for (let y = 8; y < h; y += 8) g.lineBetween(0, y, w, y);
     for (let x = 0; x < w; x += 16) g.lineBetween(x, 0, x, h);
     g.generateTexture(key, w, h);
+    g.destroy();
+    return key;
+}
+
+// Auto de 56x22 para cruzar la calle
+function texAuto(escena, color) {
+    const key = `auto_${color.toString(16)}`;
+    if (escena.textures.exists(key)) return key;
+    const g = escena.make.graphics({ x: 0, y: 0, add: false });
+    g.fillStyle(color, 1);
+    g.fillRoundedRect(0, 6, 56, 12, 4);          // carrocería
+    g.fillRoundedRect(12, 0, 30, 10, 4);         // techo
+    g.fillStyle(0xbbdefb, 1);
+    g.fillRect(16, 2, 22, 6);                    // ventanas
+    g.fillStyle(0x212121, 1);
+    g.fillCircle(12, 19, 4);                     // ruedas
+    g.fillCircle(44, 19, 4);
+    g.generateTexture(key, 56, 22);
     g.destroy();
     return key;
 }
@@ -628,15 +671,26 @@ class Boot extends Phaser.Scene {
     }
 }
 
-// Selector de avatar, atuendo y bioma
+// Selector de avatar, atuendo y bioma (solo paisajes desbloqueados)
 class Menu extends Phaser.Scene {
     constructor() { super('Menu'); }
 
     create() {
         dibujarCielo(this, 0x6ec6ff, 0xd7f1ff);
 
-        this.opciones = [Object.keys(AVATARES), Object.keys(ATUENDOS), BIOMAS.map((_, i) => i)];
-        this.indice = [0, 0, 0];
+        // Progreso guardado durante la sesión: cuántos paisajes están desbloqueados
+        const desbloqueados = Math.min(this.registry.get('progreso') ?? 1, BIOMAS.length);
+        this.opciones = [
+            Object.keys(AVATARES),
+            Object.keys(ATUENDOS),
+            BIOMAS.slice(0, desbloqueados).map((_, i) => i)
+        ];
+        this.desbloqueados = desbloqueados;
+        this.indice = [
+            Math.max(0, this.opciones[0].indexOf(this.registry.get('avatar') ?? 'clasica')),
+            Math.max(0, this.opciones[1].indexOf(this.registry.get('skin') ?? 'ninguno')),
+            0
+        ];
         this.fila = 0;
         this.valores = [];
         this.marcos = [];
@@ -720,7 +774,7 @@ class Menu extends Phaser.Scene {
     descripcionOpcion(r, k) {
         if (r === 0) return AVATARES[k].descripcion;
         if (r === 1) return ATUENDOS[k].descripcion;
-        return BIOMAS[k].descripcion;
+        return `${BIOMAS[k].descripcion}\nPaisajes desbloqueados: ${this.desbloqueados} de ${BIOMAS.length}`;
     }
 
     refrescar() {
@@ -738,6 +792,8 @@ class Menu extends Phaser.Scene {
     }
 
     empezar() {
+        this.registry.set('avatar', this.opcion(0));
+        this.registry.set('skin', this.opcion(1));
         this.scene.start('Juego', {
             avatar: this.opcion(0),
             skin: this.opcion(1),
@@ -746,7 +802,7 @@ class Menu extends Phaser.Scene {
     }
 }
 
-// Nivel: un bioma por vez; al llegar a la meta se avanza al siguiente
+// Nivel: se juega un paisaje; hay que recoger monedas mínimas para pasar
 class Juego extends Phaser.Scene {
     constructor() { super('Juego'); }
 
@@ -761,14 +817,20 @@ class Juego extends Phaser.Scene {
     create() {
         this.av = AVATARES[this.partida.avatar];
         this.bio = BIOMAS[this.partida.bioma];
-        this.esFinal = this.partida.bioma === BIOMAS.length - 1;
+        this.idx = this.partida.bioma;
+        this.esFinal = this.idx === BIOMAS.length - 1;
         this.ancho = this.esFinal ? ANCHO_FINAL : ANCHO_NIVEL;
         this.escala = this.av.radio / 16;
+        this.dificultad = 1 + 0.12 * this.idx;   // los paisajes avanzados son más rápidos
         this.puntos = 0;
         this.ganado = false;
         this.mirada = 1;
         this.ojos = [];
         this.vientoActual = 0;
+        this.ultimoSuelo = -1000;
+        this.saltoPendiente = 0;
+        this.golpeHasta = 0;
+        this.avisoHasta = 0;
         this.zonasLentas = this.bio.zonasLentas.map(([x, y, w, h]) => new Phaser.Geom.Rectangle(x, y, w, h));
 
         this.cameras.main.setBackgroundColor(this.bio.cielo[1]);
@@ -779,22 +841,48 @@ class Juego extends Phaser.Scene {
         FONDOS[this.bio.tex](this, this.ancho);
 
         this.plataformas = this.physics.add.staticGroup();
-        const suelo = crearTexturaBloque(this, `suelo_${this.bio.tex}`, this.ancho, 32, this.bio.paleta.suelo);
+        const tex = this.bio.tex;
+        const suelo = crearTexturaBloque(this, `suelo_${tex}`, this.ancho, 32, this.bio.paleta.suelo);
         this.plataformas.create(this.ancho / 2, SUELO_TOP + 16, suelo);
         this.bio.plataformas.forEach(([x, y, bloques]) => {
-            const key = crearTexturaBloque(this, `plat_${this.bio.tex}_${bloques}`, bloques * 32, 16, this.bio.paleta.plat);
+            const key = crearTexturaBloque(this, `plat_${tex}_${bloques}`, bloques * 32, 16, this.bio.paleta.plat);
             this.plataformas.create(x, y, key);
         });
 
-        // Plataformas móviles (solo Guayaquil)
+        // Plataformas que se mueven de lado a lado
         this.moviles = this.physics.add.group({ allowGravity: false, immovable: true });
         this.bio.moviles.forEach(m => {
             const key = crearTexturaBloque(this, `movil_${m.tiles}`, m.tiles * 32, 16, [0xffd54f, 0xfff59d, 0xb8860b]);
             const sp = this.moviles.create(m.x, m.y, key);
             sp.rango = [m.min, m.max];
-            sp.vel = m.vel;
-            sp.xAnterior = m.x;
-            sp.body.setVelocityX(m.vel);
+            sp.vel = m.vel * this.dificultad;
+            sp.xPrev = m.x;
+            sp.yPrev = m.y;
+            sp.body.setVelocityX(sp.vel);
+        });
+
+        // Redondeles: plataformas que giran en círculo
+        this.redondeles = this.physics.add.group({ allowGravity: false, immovable: true });
+        this.bio.redondeles.forEach(c => {
+            const key = crearTexturaBloque(this, `redondel_${c.tiles}`, c.tiles * 32, 16, [0xbdbdbd, 0xeeeeee, 0x757575]);
+            const sp = this.redondeles.create(c.cx + c.r, c.cy, key);
+            sp.cx = c.cx;
+            sp.cy = c.cy;
+            sp.radio = c.r;
+            sp.ang = 0;
+            sp.w = c.w * this.dificultad;
+            sp.xPrev = sp.x;
+            sp.yPrev = sp.y;
+        });
+
+        // Calles: autos que cruzan de un lado a otro
+        this.vehiculos = this.physics.add.group({ allowGravity: false, immovable: true });
+        this.bio.calles.forEach(c => {
+            const key = texAuto(this, c.color);
+            const sp = this.vehiculos.create((c.x1 + c.x2) / 2, SUELO_TOP - 11, key);
+            sp.rango = [c.x1, c.x2];
+            sp.vel = c.vel * this.dificultad;
+            sp.body.setVelocityX(sp.vel);
         });
 
         // Bloques frágiles: la esfera de roca los rompe al correr
@@ -808,26 +896,24 @@ class Juego extends Phaser.Scene {
         });
         for (let x = 300; x < this.ancho - 300; x += 400) this.monedas.create(x, 530, 'moneda');
         this.totalMonedas = this.monedas.getLength();
+        // Mínimo para pasar: sube con cada paisaje (de 30% a 60% de las monedas)
+        this.monedasRequeridas = Math.ceil(this.totalMonedas * Math.min(0.6, 0.3 + 0.05 * this.idx));
 
         // Pelota del avatar elegido
         this.player = this.physics.add.sprite(100, 300, this.av.textura);
-        this.player.setCircle(this.av.radio);
-        this.player.setBounce(this.av.rebote);
-        this.player.setCollideWorldBounds(true);
-        this.player.setMaxVelocity(this.av.velMax[0], 500);
-        this.player.setDragX(this.av.friccion);
-        this.player.setGravityY(this.av.pesoExtra);
+        this.aplicarFisicaAvatar();
 
         // Atuendo: se dibuja sobre la pelota y la sigue en cada frame
         this.atuendo = this.add.graphics().setDepth(1).setScale(this.escala);
         dibujarAtuendo(this.atuendo, this.partida.skin);
 
         // Ojos: blancos y pupilas que siguen a la pelota
-        this.ojos = [-6, 6].map(dx => ({
-            dx: dx * this.escala,
+        this.ojos = [-1, 1].map(signo => ({
+            signo,
             blanco: this.add.image(0, 0, 'ojo').setDepth(2),
             pupila: this.add.image(0, 0, 'pupila').setDepth(3)
         }));
+        this.ajustarOjos();
         this.time.addEvent({ delay: 2500, loop: true, callback: this.parpadear, callbackScope: this });
         if (this.bio.viento) {
             this.time.addEvent({ delay: 3000, loop: true, callback: this.cambiarViento, callbackScope: this });
@@ -836,11 +922,13 @@ class Juego extends Phaser.Scene {
         // Colisiones
         this.physics.add.collider(this.player, this.plataformas);
         this.physics.add.collider(this.player, this.moviles);
+        this.physics.add.collider(this.player, this.redondeles);
+        this.physics.add.collider(this.player, this.vehiculos, (p, c) => this.golpeAuto(p, c), null, this);
         this.physics.add.collider(this.player, this.ladrillos, null, () => !this.rompeAhora(), this);
         this.physics.add.overlap(this.player, this.ladrillos, (p, b) => this.romperLadrillo(b), () => this.rompeAhora(), this);
         this.physics.add.overlap(this.player, this.monedas, (p, m) => this.recogerMoneda(m), null, this);
 
-        // Meta: poste y bandera (en el último bioma, la Casa del Reencuentro)
+        // Meta: poste y bandera (en el último paisaje, la Casa del Reencuentro)
         this.add.rectangle(META_X, 508, 6, 120, 0x555555).setDepth(1);
         this.add.triangle(META_X + 25, 452, 0, 0, 40, 15, 0, 30, 0xff3b3b).setDepth(1);
         this.meta = this.add.zone(META_X, 480, 60, 200);
@@ -853,6 +941,8 @@ class Juego extends Phaser.Scene {
         // Controles
         this.cursores = this.input.keyboard.createCursorKeys();
         this.shiftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
+        this.espacio = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.teclaCambio = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
         this.input.keyboard.on('keydown-ESC', () => this.scene.start('Menu'));
         this.events.once('shutdown', () => this.input.keyboard.removeAllListeners());
 
@@ -860,35 +950,68 @@ class Juego extends Phaser.Scene {
         this.textoMonedas = this.add.text(16, 16, '', {
             fontFamily: 'Arial', fontSize: '22px', color: '#ffffff', stroke: '#1b5e20', strokeThickness: 5
         }).setScrollFactor(0).setDepth(10);
-        this.add.text(784, 16, `${this.av.nombre} · ${this.bio.nombre}`, {
+        this.textoAvatar = this.add.text(784, 16, '', {
             fontFamily: 'Arial', fontSize: '16px', color: '#ffffff', stroke: '#000000', strokeThickness: 3
         }).setOrigin(1, 0).setScrollFactor(0).setDepth(10);
-        this.add.text(16, 560, 'Flechas: moverse  ·  ↑: saltar  ·  Shift: correr  ·  Esc: menú', {
+        this.add.text(16, 560, 'Flechas: moverse · ↑/Espacio: saltar · Shift: correr · C: cambiar pelota · Esc: menú', {
             fontFamily: 'Arial', fontSize: '16px', color: '#ffffff', stroke: '#000000', strokeThickness: 3
         }).setScrollFactor(0).setDepth(10);
         this.actualizarMarcador();
     }
 
+    aplicarFisicaAvatar() {
+        const p = this.player;
+        p.setTexture(this.av.textura);
+        p.setCircle(this.av.radio);
+        p.setBounce(this.av.rebote);
+        p.setCollideWorldBounds(true);
+        p.setMaxVelocity(this.av.velMax[0], 500);
+        p.setDragX(this.av.friccion);
+        p.setGravityY(this.av.pesoExtra);
+    }
+
+    ajustarOjos() {
+        this.ojos.forEach(o => { o.dx = o.signo * 6 * this.escala; });
+        this.atuendo.setScale(this.escala);
+    }
+
+    cambiarAvatar() {
+        const nuevo = this.partida.avatar === 'clasica' ? 'roca' : 'clasica';
+        this.partida.avatar = nuevo;
+        this.registry.set('avatar', nuevo);
+        this.av = AVATARES[nuevo];
+        this.escala = this.av.radio / 16;
+        this.aplicarFisicaAvatar();
+        this.ajustarOjos();
+        this.avisar(`Ahora eres la ${this.av.nombre}`);
+    }
+
     update(time, delta) {
         const p = this.player;
-        const mirarY = Phaser.Math.Clamp(p.body.velocity.y / 400, -1, 1);
+        const dt = delta / 1000;
 
         if (this.ganado) {
             p.setAccelerationX(0);
         } else {
-            this.moverJugador(delta);
+            if (Phaser.Input.Keyboard.JustDown(this.teclaCambio)) this.cambiarAvatar();
+            this.moverJugador(time, delta);
         }
-        this.moverPlataformasMoviles();
+        this.moverPlataformas(dt);
 
-        // El atuendo y los ojos siguen a la pelota
-        this.atuendo.setPosition(p.x, p.y);
+        // La roca se mece al moverse; el atuendo y los ojos la acompañan
+        const vx = p.body.velocity.x;
+        const sway = this.av.pesoExtra > 0
+            ? Math.sin(time * 0.006) * (1 + 3 * Math.min(1, Math.abs(vx) / this.av.velMax[1]))
+            : 0;
+        const mirarY = Phaser.Math.Clamp(p.body.velocity.y / 400, -1, 1);
+        this.atuendo.setPosition(p.x + sway, p.y);
         this.ojos.forEach(o => {
-            o.blanco.setPosition(p.x + o.dx, p.y - 4 * this.escala);
+            o.blanco.setPosition(p.x + o.dx + sway, p.y - 4 * this.escala);
             o.pupila.setPosition(o.blanco.x + this.mirada * 2.5 * this.escala, o.blanco.y + mirarY * 2);
         });
     }
 
-    moverJugador(delta) {
+    moverJugador(time, delta) {
         const p = this.player;
         const av = this.av;
         const enSuelo = p.body.blocked.down || p.body.touching.down;
@@ -907,9 +1030,16 @@ class Juego extends Phaser.Scene {
         // Ráfagas de viento (Andes)
         if (this.vientoActual) p.body.velocity.x += this.vientoActual * delta / 1000;
 
-        // Salto solo desde el suelo o una plataforma
-        if (Phaser.Input.Keyboard.JustDown(this.cursores.up) && enSuelo) {
+        // Salto: tiempo de gracia al salir del suelo y buffer de la tecla (así no se pierde el salto)
+        const ahora = time;
+        if (enSuelo) this.ultimoSuelo = ahora;
+        if (Phaser.Input.Keyboard.JustDown(this.cursores.up) || Phaser.Input.Keyboard.JustDown(this.espacio)) {
+            this.saltoPendiente = ahora + 150;
+        }
+        if (this.saltoPendiente > ahora && ahora - this.ultimoSuelo < 120) {
             p.setVelocityY(av.salto * (enAgua ? 0.85 : 1));
+            this.saltoPendiente = 0;
+            this.ultimoSuelo = -1000;
         }
 
         // La pelota rueda según su velocidad
@@ -918,16 +1048,49 @@ class Juego extends Phaser.Scene {
         if (Math.abs(vx) > 10) this.mirada = Math.sign(vx);
     }
 
-    moverPlataformasMoviles() {
-        const p = this.player;
+    moverPlataformas(dt) {
         this.moviles.getChildren().forEach(m => {
             const [min, max] = m.rango;
             if (m.x <= min) m.body.setVelocityX(Math.abs(m.vel));
             else if (m.x >= max) m.body.setVelocityX(-Math.abs(m.vel));
-            // La pelota viaja sobre la plataforma
-            if (p.body.touching.down && m.body.touching.up) p.x += m.x - m.xAnterior;
-            m.xAnterior = m.x;
+            this.cargarPasajero(m);
         });
+
+        this.redondeles.getChildren().forEach(r => {
+            r.ang += r.w * dt;
+            const tx = r.cx + Math.cos(r.ang) * r.radio;
+            const ty = r.cy + Math.sin(r.ang) * r.radio;
+            r.body.setVelocity((tx - r.x) * 20, (ty - r.y) * 20);
+            this.cargarPasajero(r);
+        });
+
+        this.vehiculos.getChildren().forEach(c => {
+            const [min, max] = c.rango;
+            if (c.x <= min) c.body.setVelocityX(Math.abs(c.vel));
+            else if (c.x >= max) c.body.setVelocityX(-Math.abs(c.vel));
+        });
+    }
+
+    // Si la pelota está sobre una plataforma en movimiento, viaja con ella
+    cargarPasajero(m) {
+        const p = this.player;
+        if (p.body.touching.down && m.body.touching.up) {
+            p.x += m.x - m.xPrev;
+            p.y += m.y - m.yPrev;
+        }
+        m.xPrev = m.x;
+        m.yPrev = m.y;
+    }
+
+    // Un auto que choca de lado empuja a la pelota hacia atrás
+    golpeAuto(p, c) {
+        if (p.body.touching.down) return;
+        const ahora = this.time.now;
+        if (ahora < this.golpeHasta) return;
+        this.golpeHasta = ahora + 700;
+        const dir = Math.sign(p.x - c.x) || 1;
+        p.setVelocity(dir * 280, -220);
+        this.cameras.main.shake(100, 0.004);
     }
 
     rompeAhora() {
@@ -958,7 +1121,8 @@ class Juego extends Phaser.Scene {
     }
 
     actualizarMarcador() {
-        this.textoMonedas.setText(`Monedas: ${this.puntos} / ${this.totalMonedas}`);
+        this.textoMonedas.setText(`Monedas: ${this.puntos} / ${this.monedasRequeridas} para pasar`);
+        this.textoAvatar.setText(`${this.av.nombre} · ${this.bio.nombre}`);
     }
 
     cambiarViento() {
@@ -989,7 +1153,20 @@ class Juego extends Phaser.Scene {
 
     ganar() {
         if (this.ganado) return;
+
+        // Sin las monedas mínimas no se puede pasar
+        if (this.puntos < this.monedasRequeridas) {
+            const ahora = this.time.now;
+            if (ahora < this.avisoHasta) return;
+            this.avisoHasta = ahora + 1500;
+            this.avisar(`Te faltan ${this.monedasRequeridas - this.puntos} monedas para pasar`);
+            return;
+        }
+
         this.ganado = true;
+        // Desbloquea el siguiente paisaje
+        const actual = this.registry.get('progreso') ?? 1;
+        this.registry.set('progreso', Math.min(BIOMAS.length, Math.max(actual, this.idx + 2)));
 
         if (this.esFinal) {
             this.mostrarTexto('¡Llegaste a la Casa del Reencuentro!', 'Tus amigos te estaban esperando.  ·  Enter: volver al menú');
@@ -998,10 +1175,18 @@ class Juego extends Phaser.Scene {
             }));
             this.input.keyboard.once('keydown-ENTER', () => this.scene.start('Menu'));
         } else {
-            const siguiente = BIOMAS[this.partida.bioma + 1];
-            this.mostrarTexto(`¡${this.bio.nombre} completado!`, `Siguiente: ${siguiente.nombre}`);
-            this.time.delayedCall(3000, () => this.scene.restart({ ...this.partida, bioma: this.partida.bioma + 1 }));
+            const siguiente = BIOMAS[this.idx + 1];
+            this.mostrarTexto(`¡${this.bio.nombre} completado!`, `Desbloqueaste: ${siguiente.nombre}`);
+            this.time.delayedCall(3000, () => this.scene.start('Menu'));
         }
+    }
+
+    avisar(texto) {
+        const t = this.add.text(400, 120, texto, {
+            fontFamily: 'Arial', fontSize: '20px', color: '#ffffff', stroke: '#000000', strokeThickness: 4,
+            backgroundColor: '#00000066', padding: { x: 10, y: 5 }
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(20);
+        this.time.delayedCall(1500, () => t.destroy());
     }
 
     mostrarTexto(titulo, subtitulo) {
